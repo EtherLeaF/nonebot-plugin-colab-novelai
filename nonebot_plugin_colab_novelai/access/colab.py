@@ -39,12 +39,15 @@ def login_google_acc(gmail: str, password: str) -> None:
             driver.get(login.get_attribute('href'))
 
         # if prompt, choose "Use another account" when login
-        wait_and_click_element(
-            driver,
-            by=By.XPATH,
-            value='//*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul'
-                  '/li[@class="JDAKTe eARute W7Aapd zpCp3 SmR8" and not(@jsname="fKeql")]'
-        )
+        try:
+            wait_and_click_element(
+                driver,
+                by=By.XPATH,
+                value='//*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul'
+                      '/li[@class="JDAKTe eARute W7Aapd zpCp3 SmR8" and not(@jsname="fKeql")]'
+            )
+        except TimeoutException:
+            pass
 
         # input gmail and password
         gmail_input = wait_and_click_element(driver, by=By.XPATH, value='//*[@id="identifierId"]')
