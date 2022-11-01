@@ -1,11 +1,12 @@
 import time
 
 from asyncer import asyncify
+from nonebot.log import logger
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException, NoAlertPresentException
+from selenium.common.exceptions import TimeoutException, NoAlertPresentException, JavascriptException
 
 from ..utils import chrome_driver as driver, wait_and_click_element, PLUGIN_DIR
 
@@ -37,13 +38,13 @@ def login_google_acc(gmail: str, password: str) -> None:
             login = driver.find_element(By.XPATH, '//*[@id="gb"]/div/div/a')
             driver.get(login.get_attribute('href'))
 
-            # choose "Use another account" when login
-            use_another_acc = driver.find_element(
-                By.XPATH,
-                '//*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul'
-                '/li[@class="JDAKTe eARute W7Aapd zpCp3 SmR8" and not(@jsname="fKeql")]'
-            )
-            use_another_acc.click()
+        # if prompt, choose "Use another account" when login
+        wait_and_click_element(
+            driver,
+            by=By.XPATH,
+            value='//*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul'
+                  '/li[@class="JDAKTe eARute W7Aapd zpCp3 SmR8" and not(@jsname="fKeql")]'
+        )
 
         # input gmail and password
         gmail_input = wait_and_click_element(driver, by=By.XPATH, value='//*[@id="identifierId"]')
@@ -61,7 +62,7 @@ def login_google_acc(gmail: str, password: str) -> None:
             )
             raise RuntimeError("Google账号的密码填写有误！")
         except TimeoutException:
-            pass
+            logger.success("成功登入Google账号！")
 
     except TimeoutException:
         raise RuntimeError("登陆Google账号发生超时，请检查网络，账号可用性和账密！")
@@ -92,13 +93,19 @@ def run_colab(gmail: str, password: str, cpolar_authtoken: str) -> None:
 
     # input cpolar authtoken
     time.sleep(3)
-    authtoken_box = driver.execute_script(
-        'return document.querySelector("#cell-54WF-Om0X6tf > div.main-content > div.codecell-input-output > '
-        'div.inputarea.horizontal.layout.both > colab-form > div > colab-form-input > div.layout.horizontal.grow > '
-        'paper-input").shadowRoot.querySelector("#input-1 > input")'
-    )
-    authtoken_box.clear()
-    authtoken_box.send_keys(cpolar_authtoken)
+    try:
+        authtoken_box = driver.execute_script(
+            'return document.querySelector("#cell-54WF-Om0X6tf > div.main-content > div.codecell-input-output > '
+            'div.inputarea.horizontal.layout.both > colab-form > div > colab-form-input > div.layout.horizontal.grow > '
+            'paper-input").shadowRoot.querySelector("#input-1 > input")'
+        )
+        authtoken_box.clear()
+        authtoken_box.send_keys(cpolar_authtoken)
+    except JavascriptException:
+        # failed to fill input box
+        # mostly, this happens when Google is asking you to do extra verification i.e. phone number
+        # Colab page won't be loaded normally, then result in this error.
+        raise RuntimeError("Google账密验证成功，但Colab页面没有被成功加载。可能是因为Google正在要求账号进行额外验证！")
 
     # run all cells
     driver.find_element(By.XPATH, '/html/body').send_keys(Keys.CONTROL + Keys.F9)

@@ -20,7 +20,7 @@ from .config import plugin_config
 from .access.cpolar import get_cpolar_authtoken
 
 
-os.makedirs("/data/colab-novelai", exist_ok=True)
+os.makedirs("./data/colab-novelai", exist_ok=True)
 PLUGIN_DIR = Path(__file__).absolute().parent
 
 # Initialize ArgumentParsers for nonebot matchers
@@ -47,7 +47,7 @@ options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
 # options.add_experimental_option('mobileEmulation', {'deviceName': 'iPhone X'})
 chrome_driver = webdriver.Chrome(
-    ChromeDriverManager(path="/data/colab-novelai/").install(),
+    ChromeDriverManager(path="./data/colab-novelai/").install(),
     options=options
 )
 
