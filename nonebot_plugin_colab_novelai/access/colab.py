@@ -68,7 +68,7 @@ def login_google_acc(gmail: str, password: str) -> None:
             logger.success("成功登入Google账号！")
 
     except TimeoutException:
-        raise RuntimeError("登陆Google账号发生超时，请检查网络，账号可用性和账密！")
+        raise RuntimeError("登陆Google账号发生超时，请检查网络和账密！")
 
     # In case of Google asking you to complete your account info
     try:
@@ -108,7 +108,9 @@ def run_colab(gmail: str, password: str, cpolar_authtoken: str) -> None:
         # failed to fill input box
         # mostly, this happens when Google is asking you to do extra verification i.e. phone number
         # Colab page won't be loaded normally, then result in this error.
-        raise RuntimeError("Google账密验证成功，但Colab页面没有被成功加载。可能是因为Google正在要求账号进行额外验证！")
+        raise RuntimeError(
+            "Google账密验证成功，但Colab页面没有被成功加载。可能是因为Google正在要求账号进行额外验证或账号不再可用！"
+        )
 
     # run all cells
     driver.find_element(By.XPATH, '/html/body').send_keys(Keys.CONTROL + Keys.F9)

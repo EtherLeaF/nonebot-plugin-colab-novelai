@@ -44,13 +44,13 @@ def handle_recaptcha() -> None:
         driver.switch_to.frame(driver.find_element(
             By.XPATH, '//iframe[contains(@src,"https://www.google.com/recaptcha/api2/bframe")]'
         ))
-    except NoSuchElementException:
+        wait_and_click_element(
+            driver,
+            by=By.CSS_SELECTOR, value='button#recaptcha-audio-button'
+        )
+    except (NoSuchElementException, TimeoutException):
         logger.success("Colab ReCaptcha passed!")
         return
-    wait_and_click_element(
-        driver,
-        by=By.CSS_SELECTOR, value='button#recaptcha-audio-button'
-    )
 
     # analyze audio
     while True:

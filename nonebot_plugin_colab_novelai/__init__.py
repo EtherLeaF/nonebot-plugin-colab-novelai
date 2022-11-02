@@ -19,7 +19,7 @@ from ._main import naifu_txt2img, handle_recaptcha, access_colab_with_accounts
 nb_driver = get_driver()
 require("nonebot_plugin_apscheduler")
 scheduler.add_job(handle_recaptcha, "interval", id="checkReCaptcha", seconds=10)
-scheduler.add_job(access_colab_with_accounts, "interval", id="runColab", minutes=1)
+scheduler.add_job(access_colab_with_accounts, "interval", id="runColab", seconds=30)
 
 txt2img = on_shell_command("naifu", priority=10, parser=naifu_txt2img_parser, block=True)
 
