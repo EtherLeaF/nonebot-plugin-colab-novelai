@@ -12,6 +12,12 @@ class Config(BaseModel, extra=Extra.ignore):
     bce_apikey: Optional[str] = None
     bce_secretkey: Optional[str] = None
     naifu_max: int = 1
+    nai_save2local_path: Optional[str] = None
+    nai_save2webdav_info: Dict[str, Optional[str]] = {
+        "url": None,
+        "username": None, "password": None,
+        "path": None
+    }
 
 
 plugin_config = Config.parse_obj(get_driver().config.dict())
@@ -24,3 +30,7 @@ assert(
 assert(
     plugin_config.bce_apikey is not None and plugin_config.bce_secretkey is not None
 ), "需要同时填写百度智能云的apiKey与SecretKey！"
+assert(
+    all(plugin_config.nai_save2webdav_info.values()) or
+    all(i is None for i in plugin_config.nai_save2webdav_info.values())
+), "请检查WebDAV的Config是否完整填写！"
