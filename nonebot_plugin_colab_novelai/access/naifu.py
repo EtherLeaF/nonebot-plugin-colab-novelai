@@ -40,7 +40,7 @@ async def txt2img(
         }
 
         async with AsyncClient() as client:
-            resp = await client.get(cpolar_url)
+            resp = await client.get(cpolar_url, timeout=None)
             if resp.status_code == 404 or resp.status_code == 502:
                 raise RuntimeError
 
