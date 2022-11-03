@@ -35,7 +35,9 @@ def login_google_acc(gmail: str, password: str) -> None:
             driver.find_element(By.XPATH, '//*[@id="signout"]').click()
 
             # click "Sign in"
-            login = driver.find_element(By.XPATH, '//*[@id="gb"]/div/div/a')
+            login = WebDriverWait(driver, 5).until(
+                lambda t_driver: t_driver.find_element(By.XPATH, '//*[@id="gb"]/div/div/a')
+            )
             driver.get(login.get_attribute('href'))
 
         # if prompt, choose "Use another account" when login
