@@ -121,10 +121,10 @@ async def access_colab_with_accounts() -> None:
                 await get_cpolar_url()
                 break
             except RuntimeError:
-                logger.info(f"等待APP启动中... ({round(time.time() - start, 1)}s/600s)")
+                logger.info(f"等待APP启动中... ({round(time.time() - start, 1)}s/600s) 当前账号：{gmail}")
                 await asyncio.sleep(5)
         if time.time() - start >= 600:
-            logger.error("Colab未成功启动，可能是因为ReCaptcha验证失败或已达到用量上限！")
+            logger.error(f"Colab未成功启动，可能是因为ReCaptcha验证失败或已达到用量上限！当前账号：{gmail}")
             logger.info("尝试切换Google账号中...")
             continue
 
@@ -134,9 +134,9 @@ async def access_colab_with_accounts() -> None:
 
             try:
                 await get_cpolar_url()
-                logger.info("当前账号的Colab在线中...")
+                logger.info(f"当前Colab账号在线中：{gmail}")
             except RuntimeError:
-                logger.warning("当前Colab账号已掉线！")
+                logger.warning(f"当前Colab账号已掉线：{gmail}")
                 logger.info("尝试切换Google账号中...")
                 break
 

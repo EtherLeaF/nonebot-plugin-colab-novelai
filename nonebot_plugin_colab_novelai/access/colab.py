@@ -65,12 +65,12 @@ def login_google_acc(gmail: str, password: str) -> None:
                     By.XPATH, '//*[@id="yDmH0d"]/c-wiz/div/div[2]/div/div[1]/div/form/span/div[1]/div[2]/div[1]'
                 )
             )
-            raise RuntimeError("Google账号的密码填写有误！")
+            raise RuntimeError(f"Google账号{gmail}的密码填写有误！")
         except TimeoutException:
-            logger.success("成功登入Google账号！")
+            logger.success(f"成功登入Google账号：{gmail}！")
 
     except TimeoutException:
-        raise RuntimeError("登陆Google账号发生超时，请检查网络和账密！")
+        raise RuntimeError(f"登陆Google账号{gmail}发生超时，请检查网络和账密！")
 
     # In case of Google asking you to complete your account info
     try:
@@ -111,7 +111,8 @@ def run_colab(gmail: str, password: str, cpolar_authtoken: str) -> None:
         # mostly, this happens when Google is asking you to do extra verification i.e. phone number
         # Colab page won't be loaded normally, then result in this error.
         raise RuntimeError(
-            "Google账密验证成功，但Colab页面没有被成功加载。可能是因为Google正在要求账号进行额外验证或账号不再可用！"
+            f"Google账密验证成功，但Colab页面没有被成功加载。可能是因为Google正在要求账号进行额外验证或账号不再可用！"
+            f"当前账号：{gmail}"
         )
 
     # run all cells
