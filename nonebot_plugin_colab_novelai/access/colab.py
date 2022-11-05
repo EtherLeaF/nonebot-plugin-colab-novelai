@@ -54,15 +54,17 @@ def login_google_acc(gmail: str, password: str) -> None:
 
         # input gmail and password
         gmail_input = WebDriverWait(driver, 5).until(ec.element_to_be_clickable(
-            (By.CSS_SELECTOR, "input#identifierId")
+            (By.XPATH, '//*[@id="identifierId"]')
         ))
         driver.execute_script("arguments[0].click();", gmail_input)
+        time.sleep(0.5)
         gmail_input.send_keys(gmail, Keys.ENTER)
 
         pwd_input = WebDriverWait(driver, 5).until(ec.element_to_be_clickable(
-            (By.CSS_SELECTOR, 'input[name="Passwd"]')
+            (By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input')
         ))
         driver.execute_script("arguments[0].click();", pwd_input)
+        time.sleep(0.5)
         pwd_input.send_keys(password, Keys.ENTER)
 
         # check if the password is incorrect
