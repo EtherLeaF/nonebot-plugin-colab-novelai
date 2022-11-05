@@ -6,6 +6,7 @@ from nonebot.log import logger
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException, NoAlertPresentException, JavascriptException
 
 from ..utils import chrome_driver as driver, wait_and_click_element, PLUGIN_DIR
@@ -52,10 +53,16 @@ def login_google_acc(gmail: str, password: str) -> None:
             pass
 
         # input gmail and password
-        gmail_input = wait_and_click_element(driver, by=By.XPATH, value='//*[@id="identifierId"]')
+        gmail_input = WebDriverWait(driver, 5).until(ec.element_to_be_clickable(
+            (By.CSS_SELECTOR, "input#identifierId")
+        ))
+        driver.execute_script("arguments[0].click();", gmail_input)
         gmail_input.send_keys(gmail, Keys.ENTER)
 
-        pwd_input = wait_and_click_element(driver, by=By.XPATH, value='//*[@id="password"]/div[1]/div/div[1]/input')
+        pwd_input = WebDriverWait(driver, 5).until(ec.element_to_be_clickable(
+            (By.CSS_SELECTOR, 'input[name="Passwd"]')
+        ))
+        driver.execute_script("arguments[0].click();", pwd_input)
         pwd_input.send_keys(password, Keys.ENTER)
 
         # check if the password is incorrect
