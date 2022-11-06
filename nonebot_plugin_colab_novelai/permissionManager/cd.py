@@ -31,7 +31,7 @@ def load_cd_yml() -> Tuple[Dict[T_Quid, float], Set[T_AuthorizedQuid]]:
 
 def save_cd_yml(data: Any) -> None:
     with open("./data/colab-novelai/cd.yml", 'w') as f:
-        yaml.safe_dump(data, f)
+        yaml.dump(data, f)
 
 
 async def add_authorized_user(matcher: Type[Matcher], user_id: List[T_AuthorizedQuid]) -> None:
