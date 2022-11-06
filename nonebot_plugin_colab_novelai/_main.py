@@ -21,6 +21,7 @@ from .access.bce import recognize_audio
 from .access.colab import NOTEBOOK_URL, run_colab
 from .access.cpolar import get_cpolar_authtoken, get_cpolar_url
 from .access.naifu import txt2img
+from .permissionManager.cd import record_cd, get_user_cd
 from .config import plugin_config
 from .utils import chrome_driver as driver, wait_and_click_element
 
@@ -142,7 +143,7 @@ async def access_colab_with_accounts() -> None:
 
 
 # ———————————————————— user interactions ———————————————————— #
-async def naifu_txt2img(matcher: Type[Matcher], args: Namespace) -> None:
+async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Namespace) -> None:
     # check the arguments
     try:
         assert args.size in [
@@ -154,6 +155,14 @@ async def naifu_txt2img(matcher: Type[Matcher], args: Namespace) -> None:
         assert -1 <= args.seed <= 2**32 - 1, "设置的种子需要在-1与2^32-1之间！"
     except AssertionError as e:
         await matcher.finish(str(e), at_sender=True)
+
+    # check user cd
+    user_id = event.get_user_id()
+    remaining_cd = get_user_cd(user_id)
+    if remaining_cd > 0:
+        await matcher.finish(f"你的cd还有{round(remaining_cd)}秒哦，可以稍后再来！", at_sender=True)
+    # record user cd
+    record_cd(user_id, num=args.num)
 
     # get the images
     try:
@@ -174,7 +183,11 @@ async def naifu_txt2img(matcher: Type[Matcher], args: Namespace) -> None:
 
         # save the images
         await save_content(images, "masterpiece,best quality," + prompts)
+
+    # if any exception occurs
     except RuntimeError as e:
+        # remove user cd
+        record_cd(user_id, num=0)
         await matcher.finish(str(e), at_sender=True)
 
 

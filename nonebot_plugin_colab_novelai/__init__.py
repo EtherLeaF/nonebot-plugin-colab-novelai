@@ -26,7 +26,7 @@ txt2img = on_shell_command("naifu", priority=10, parser=naifu_txt2img_parser, bl
 
 @txt2img.handle()
 async def _naifu_txt2img(event: MessageEvent, args: Namespace = ShellCommandArgs()) -> None:
-    await naifu_txt2img(matcher=txt2img, args=args)
+    await naifu_txt2img(matcher=txt2img, event=event, args=args)
 
 
 @nb_driver.on_shutdown

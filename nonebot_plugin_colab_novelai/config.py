@@ -12,6 +12,7 @@ class Config(BaseModel, extra=Extra.ignore):
     bce_apikey: Optional[str] = None
     bce_secretkey: Optional[str] = None
     naifu_max: int = 1
+    naifu_cd: int = 0
     nai_save2local_path: Optional[str] = None
     nai_save2webdav_info: Dict[str, Optional[str]] = {
         "url": None,
