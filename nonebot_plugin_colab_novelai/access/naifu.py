@@ -41,8 +41,8 @@ async def txt2img(
 
         async with AsyncClient() as client:
             resp = await client.get(cpolar_url, timeout=None)
-            if resp.status_code == 404 or resp.status_code == 502:
-                raise RuntimeError
+            if resp.status_code in [404, 502]:
+                raise RuntimeError("APP暂时还未就绪！")
 
             result = (await client.post(api_url, json=data, headers=headers, timeout=600)).text
             result = re.findall(r"data:\S+", result)
@@ -50,8 +50,9 @@ async def txt2img(
 
         return images
 
-    except RuntimeError:
-        raise RuntimeError("暂时没有资源可供作图哦，可以稍后再来！")
+    # catch all unexpected events
+    except RuntimeError as exc:
+        raise RuntimeError("暂时没有资源可供作图哦，可以稍后再来！") from exc
 
 
 # Upcoming!
