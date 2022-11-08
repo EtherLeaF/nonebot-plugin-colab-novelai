@@ -21,15 +21,15 @@ from .access.bce import recognize_audio
 from .access.colab import NOTEBOOK_URL, run_colab
 from .access.cpolar import get_cpolar_authtoken, get_cpolar_url
 from .access.naifu import txt2img
-from .permissionManager.cd import record_cd, get_user_cd
 from .config import plugin_config
 from .utils import chrome_driver as driver, wait_and_click_element
+from .permissionManager import CooldownManager, NotSafeForWorkManager
 
 
-# ———————————————————— interval jobs ———————————————————— #
+# ———————————————————— scheduled jobs ———————————————————— #
 @asyncify
 def handle_recaptcha() -> None:
-    # listen to recaptcha frame
+    # listen to recaptcha iframe
     try:
         driver.switch_to.frame(driver.find_element(By.XPATH, '/html/body/colab-recaptcha-dialog/div/div/iframe'))
     except NoSuchElementException:
@@ -158,11 +158,11 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
 
     # check user cd
     user_id = event.get_user_id()
-    remaining_cd = get_user_cd(user_id)
+    remaining_cd = CooldownManager.get_user_cd(user_id)
     if remaining_cd > 0:
         await matcher.finish(f"你的cd还有{round(remaining_cd)}秒哦，可以稍后再来！", at_sender=True)
     # record user cd
-    record_cd(user_id, num=args.num)
+    CooldownManager.record_cd(user_id, num=args.num)
 
     # get the images
     try:
@@ -187,7 +187,7 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
     # if any exception occurs
     except RuntimeError as e:
         # remove user cd
-        record_cd(user_id, num=0)
+        CooldownManager.record_cd(user_id, num=0)
         await matcher.finish(str(e), at_sender=True)
 
 
