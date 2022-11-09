@@ -8,7 +8,7 @@ import asyncio
 from asyncer import asyncify
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, MessageSegment
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -164,6 +164,13 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
     # record user cd
     CooldownManager.record_cd(user_id, num=args.num)
 
+    # check nsfw tag availability
+    if isinstance(event, GroupMessageEvent):
+        group_id = event.group_id
+    else:
+        group_id = None
+    nsfw_available = NotSafeForWorkManager.check_nsfw_available(user_id, group_id)
+
     # get the images
     try:
         prompts = ' '.join(args.prompt).replace('，', ',')
@@ -173,7 +180,8 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
             width=int(args.size.split('x')[0]),
             height=int(args.size.split('x')[1]),
             n_samples=args.num,
-            seed=random.randint(0, 2**32 - 1) if args.seed == -1 else args.seed
+            seed=random.randint(0, 2**32 - 1) if args.seed == -1 else args.seed,
+            nsfw=nsfw_available
         )
         image_segment = reduce(
             lambda img1, img2: img1+img2,
@@ -185,7 +193,7 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         await save_content(images, "masterpiece,best quality," + prompts)
 
     # if any exception occurs
-    except RuntimeError as e:
+    except (ValueError, RuntimeError) as e:
         # remove user cd
         CooldownManager.record_cd(user_id, num=0)
         await matcher.finish(str(e), at_sender=True)

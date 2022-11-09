@@ -37,7 +37,8 @@ class CooldownManager(object):
     @classmethod
     async def add_authorized_user(
         cls,
-        matcher: Type[Matcher], user_id: List[T_UserID],
+        matcher: Type[Matcher],
+        user_id: List[T_UserID],
         **kwargs: Any
     ) -> None:
         cd_data, authorized_users = cls._load_yml()
@@ -49,7 +50,8 @@ class CooldownManager(object):
     @classmethod
     async def remove_authorized_user(
         cls,
-        matcher: Type[Matcher], user_id: List[T_AuthorizedUserID],
+        matcher: Type[Matcher],
+        user_id: List[T_AuthorizedUserID],
         **kwargs: Any
     ) -> None:
         user_id = set(user_id)

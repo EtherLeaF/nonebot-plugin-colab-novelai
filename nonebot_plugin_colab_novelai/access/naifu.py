@@ -1,10 +1,26 @@
 import re
 import base64
-from typing import List
+from typing import List, Tuple
 
 from httpx import AsyncClient
 
 from .cpolar import get_cpolar_url
+from ..utils import NSFW_TAGS
+
+
+def nsfw_tag_filtering(prompt: str, uc: str) -> Tuple[str, str]:
+    uc += ','.join(NSFW_TAGS)
+
+    prompts = set(prompt.split(','))
+    for p in prompts.copy():
+        for nsfw_tag in NSFW_TAGS:
+            if re.findall(nsfw_tag, p, flags=re.I):
+                prompts.discard(p)
+    if not prompts:
+        raise ValueError("色鬼，好好检查一下你都放了些什么tag进来！")
+    prompt = ','.join(prompts)
+
+    return prompt, uc
 
 
 # text prompts -> picture
@@ -17,9 +33,14 @@ async def txt2img(
     steps: int = 28,
     scale: int = 12,
     uc: str = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, "
-              "worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
-    uc_preset: int = 0
+              "worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry,",
+    uc_preset: int = 0,
+    nsfw: bool = False
 ) -> List[bytes]:
+    # data preprocessing
+    if not nsfw:
+        prompt, uc = nsfw_tag_filtering(prompt, uc)
+
     try:
         cpolar_url = await get_cpolar_url()
         api_url = cpolar_url + "/generate-stream"

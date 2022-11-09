@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from nonebot import get_driver
 from pydantic import BaseModel, Extra
@@ -19,6 +19,7 @@ class Config(BaseModel, extra=Extra.ignore):
         "username": None, "password": None,
         "path": None
     }
+    nai_nsfw_tags: Optional[List[str] | str] = None
 
 
 plugin_config = Config.parse_obj(get_driver().config.dict())

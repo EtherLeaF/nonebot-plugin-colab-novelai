@@ -34,7 +34,7 @@ async def _naifu_draw(event: MessageEvent, args: Namespace = ShellCommandArgs())
 
 @naifu_permission.handle()
 async def _operate_permission(args: Namespace = ShellCommandArgs()) -> None:
-    await args.operate(matcher=naifu_permission, user_id=args.uid)
+    await args.operate(matcher=naifu_permission, user_id=args.uid, group_id=args.gid)
 
 
 @nb_driver.on_shutdown
