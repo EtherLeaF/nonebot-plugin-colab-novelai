@@ -1,6 +1,7 @@
 import asyncio
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium_stealth import stealth
 
@@ -13,6 +14,8 @@ options = webdriver.ChromeOptions()
 if plugin_config.headless_webdriver:
     options.add_argument('--headless')
     options.add_argument("window-size=1920,1080")
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--remote-debugging-port=9222")
 else:
     options.add_argument("--start-maximized")
 options.add_argument("--disable-blink-features")
@@ -24,10 +27,8 @@ options.add_argument("--no-default-browser-check")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
 # options.add_experimental_option('mobileEmulation', {'deviceName': 'iPhone X'})
-chrome_driver = webdriver.Chrome(
-    ChromeDriverManager(path="./data/colab-novelai/").install(),
-    options=options
-)
+driver_path = ChromeDriverManager(path="./data/colab-novelai/").install()
+chrome_driver = webdriver.Chrome(service=Service(driver_path), options=options)
 
 with open(PLUGIN_DIR / "js" / "undefineWebDriver.js", 'r', encoding='utf-8') as js:
     chrome_driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
