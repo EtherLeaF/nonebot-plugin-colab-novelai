@@ -7,10 +7,10 @@ from pydantic import BaseModel, Extra
 class Config(BaseModel, extra=Extra.ignore):
     headless_webdriver: bool = True
     google_accounts: Dict[str, str] = {}
-    cpolar_username: Optional[str] = None
-    cpolar_password: Optional[str] = None
-    bce_apikey: Optional[str] = None
-    bce_secretkey: Optional[str] = None
+    cpolar_username: str = None
+    cpolar_password: str = None
+    bce_apikey: str = None
+    bce_secretkey: str = None
     naifu_max: int = 1
     naifu_cd: int = 0
     nai_save2local_path: Optional[str] = None
