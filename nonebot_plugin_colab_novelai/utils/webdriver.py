@@ -13,8 +13,10 @@ from ..access.cpolar import get_cpolar_authtoken
 options = webdriver.ChromeOptions()
 if plugin_config.headless_webdriver:
     options.add_argument('--headless')
+    options.add_argument("--no-sandbox")
     options.add_argument("window-size=1920,1080")
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--disable-setuid-sandbox")
     options.add_argument("--remote-debugging-port=9222")
 else:
     options.add_argument("--start-maximized")
