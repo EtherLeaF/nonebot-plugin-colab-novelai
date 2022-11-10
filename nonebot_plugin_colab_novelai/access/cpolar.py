@@ -24,7 +24,7 @@ async def get_cpolar_authtoken() -> str:
         cpolar_authtoken = re.findall(r"authtoken\s.+<", dashboard_resp.text)[0][10:-1]
         return cpolar_authtoken
     except IndexError:
-        raise RuntimeError("cpolar帐密填写有误！")
+        raise ValueError("cpolar帐密填写有误！")
 
 
 async def get_cpolar_url() -> str:
