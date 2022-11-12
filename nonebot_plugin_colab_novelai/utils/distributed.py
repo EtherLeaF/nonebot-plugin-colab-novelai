@@ -13,13 +13,13 @@ from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
 from ..config import plugin_config
 
 
-os.makedirs("./data/colab-novelai", exist_ok=True)
-PLUGIN_DIR = Path(__file__).absolute().parent.parent
-
 T_UserID = TypeVar("T_UserID", str, int)
 T_AuthorizedUserID = TypeVar("T_AuthorizedUserID", str, int)
 T_GroupID = TypeVar("T_GroupID", str, int)
 T_AuthorizedGroupID = TypeVar("T_AuthorizedGroupID", str, int)
+
+os.makedirs("./data/colab-novelai", exist_ok=True)
+PLUGIN_DIR = Path(__file__).absolute().parent.parent
 
 if plugin_config.nai_nsfw_tags is None:
     nai_nsfw_tags = set()
@@ -34,9 +34,9 @@ elif isinstance(plugin_config.nai_nsfw_tags, str):
 
 NSFW_TAGS = nai_nsfw_tags | {
     'nsfw', 'r18', 'nude', 'dick', 'cock', 'penis', 'pussy', 'cum', 'condom', 'nipple', 'penis', 'sex', 'vaginal',
-    'straddling', 'doggystyle', 'missionary', 'lick', 'bukkake', 'armpit', 'breasts out', 'ejaculation', 'piercing',
-    'pov', 'rape', 'anal', 'double penetration', 'bdsm', 'milking', 'public tattoo', 'vibrator', 'ball gag',
-    'not safe for work'
+    'straddling', 'doggystyle', 'doggy style', 'doggy-style', 'missionary', 'lick', 'bukkake', 'armpit', 'breasts out',
+    'pov', 'rape', 'anal', 'double penetration', 'bdsm', 'milking', 'vibrator', 'ball gag', 'not safe for work'
+    'ejaculation', 'piercing', 'bukakke'
 }
 
 

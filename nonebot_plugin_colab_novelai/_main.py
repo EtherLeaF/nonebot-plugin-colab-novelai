@@ -194,7 +194,7 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
 
     # if any exception occurs
     except (ValueError, RuntimeError) as e:
-        # remove user cd
+        # reset user cd
         CooldownManager.record_cd(user_id, num=0)
         await matcher.finish(str(e), at_sender=True)
 
