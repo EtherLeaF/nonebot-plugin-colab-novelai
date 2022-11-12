@@ -61,7 +61,7 @@ __plugin_meta__ = PluginMetadata(
                               '# Subcommand 2:\n'
                               'naifu su add <-u --uid <USER ID>...>\n'
                               '添加白名单用户\n'
-                              '-u: 必选参数，为用户QQ号，可填写多个并以空格分隔'
+                              '-u: 必选参数，为用户QQ号，可填写多个并以空格分隔\n'
                               '.\n'
                               '# Subcommand 3:\n'
                               'naifu su rm <-u --uid <USER ID>...>\n'
@@ -90,7 +90,7 @@ __plugin_meta__ = PluginMetadata(
                               'naifu nsfw rm [-u --uid <USER ID>...] [-g --gid <GROUP ID>...]\n'
                               '移除允许NSFW内容的用户或群组\n'
                               '-u: 可选参数，为用户QQ号，可填写多个并以空格分隔\n'
-                              '-g: 可选参数，为群号，可填写多个并以空格分隔\n'
+                              '-g: 可选参数，为群号，可填写多个并以空格分隔'
             }
         ]
     }
