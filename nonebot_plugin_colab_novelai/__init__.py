@@ -16,6 +16,7 @@ from nonebot_plugin_apscheduler import scheduler
 from .utils import chrome_driver
 from .argparsers import naifu_draw_parser, naifu_perm_parser
 from ._main import handle_recaptcha, access_colab_with_accounts
+from .__meta__ import __plugin_meta__
 
 
 nb_driver = get_driver()
