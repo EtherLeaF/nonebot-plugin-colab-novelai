@@ -4,6 +4,7 @@ import yaml
 
 from nonebot import get_driver
 from nonebot.matcher import Matcher
+from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent
 
 from ..utils import T_UserID, T_AuthorizedUserID, T_GroupID, T_AuthorizedGroupID
 
@@ -39,10 +40,15 @@ class NotSafeForWorkManager(object):
     async def add_authorized_user(
         cls,
         matcher: Type[Matcher],
+        event: MessageEvent,
         user_id: List[T_UserID], group_id: List[T_GroupID]
     ) -> None:
         authorized_users, authorized_groups = cls._load_yml()
 
+        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
+            group_id = [str(event.group_id)]
+            authorized_groups.update(group_id)
+            await matcher.send(f"已允许本群使用nsfw tag!")
         if user_id:
             authorized_users.update(user_id)
             await matcher.send(f"已允许以下用户使用nsfw tag:{', '.join(set(user_id))}")
@@ -56,12 +62,17 @@ class NotSafeForWorkManager(object):
     async def remove_authorized_user(
         cls,
         matcher: Type[Matcher],
+        event: MessageEvent,
         user_id: List[T_AuthorizedUserID], group_id: List[T_AuthorizedGroupID]
     ) -> None:
         user_id = set(user_id)
         group_id = set(group_id)
         authorized_users, authorized_groups = cls._load_yml()
 
+        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
+            group_id = {str(event.group_id)}
+            await matcher.send(f"已禁止本群使用nsfw tag!")
+            authorized_groups -= group_id
         if user_id:
             await matcher.send(f"已禁止以下用户使用nsfw tag:{', '.join(authorized_users & user_id)}")
             authorized_users -= user_id
