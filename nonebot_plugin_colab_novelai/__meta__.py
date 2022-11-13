@@ -5,7 +5,7 @@ from .config import Config as __PluginConfigModel__, plugin_config
 
 
 __plugin_name__ = "Colab-NovelAI"
-__plugin_version__ = "0.1.0"
+__plugin_version__ = "0.1.1"
 __plugin_author__ = "T_EtherLeaF <thetapilla@gmail.com>"
 
 __plugin_adapters__ = [OneBotV11Adapter]
@@ -37,7 +37,7 @@ __plugin_meta__ = PluginMetadata(
                 'brief_des': '告诉AI开始作图',
                 'detail_des': f'naifu draw <-p --prompt <PROMPT>...> '
                               f'[-s --size <SIZE>] [-n --num <NUM>] [-s --seed <SEED>]\n'
-                              f'.\n'
+                              f' \n'
                               f'-p: 必选参数，指定作画的关键词，以逗号分隔，必须为英语\n'
                               f'-s: 可选参数，指定图片生成大小，支持以下几种，默认为512x768：\n'
                               f'  384x640, 512x768, 512x1024   # Portrait\n'
@@ -52,17 +52,17 @@ __plugin_meta__ = PluginMetadata(
                 'trigger_condition': 'Superuser',
                 'brief_des': '插件白名单用户组管理(无cd)',
                 'detail_des': 'naifu su <subcommand> [<args>]\n'
-                              '.\n'
-                              '.\n'
+                              ' \n'
+                              ' \n'
                               '# Subcommand 1:\n'
                               'naifu su ls\n'
                               '列出当前所有白名单用户\n'
-                              '.\n'
+                              ' \n'
                               '# Subcommand 2:\n'
                               'naifu su add <-u --uid <USER ID>...>\n'
                               '添加白名单用户\n'
                               '-u: 必选参数，为用户QQ号，可填写多个并以空格分隔\n'
-                              '.\n'
+                              ' \n'
                               '# Subcommand 3:\n'
                               'naifu su rm <-u --uid <USER ID>...>\n'
                               '移除白名单用户\n'
@@ -74,23 +74,25 @@ __plugin_meta__ = PluginMetadata(
                 'trigger_condition': 'Superuser',
                 'brief_des': '管理允许绘制NSFW内容的用户与群组',
                 'detail_des': 'naifu nsfw <subcommand> [<args>]\n'
-                              '.\n'
-                              '.\n'
+                              ' \n'
+                              ' \n'
                               '# Subcommand 1:\n'
                               'naifu nsfw ls\n'
                               '列出当前所有允许NSFW内容的用户与群组\n'
-                              '.\n'
+                              ' \n'
                               '# Subcommand 2:\n'
                               'naifu nsfw add [-u --uid <USER ID>...] [-g --gid <GROUP ID>...]\n'
                               '添加允许NSFW内容的用户或群组\n'
                               '-u: 可选参数，为用户QQ号，可填写多个并以空格分隔\n'
                               '-g: 可选参数，为群号，可填写多个并以空格分隔\n'
-                              '.\n'
+                              '当两个可选参数均未填写时，默认添加当前所处群聊的群号。\n'
+                              ' \n'
                               '# Subcommand 3:\n'
                               'naifu nsfw rm [-u --uid <USER ID>...] [-g --gid <GROUP ID>...]\n'
                               '移除允许NSFW内容的用户或群组\n'
                               '-u: 可选参数，为用户QQ号，可填写多个并以空格分隔\n'
-                              '-g: 可选参数，为群号，可填写多个并以空格分隔'
+                              '-g: 可选参数，为群号，可填写多个并以空格分隔\n'
+                              '当两个可选参数均未填写时，默认移除当前所处群聊的群号。'
             }
         ]
     }

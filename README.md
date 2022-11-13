@@ -54,7 +54,9 @@ pip install nonebot_plugin_colab_novelai
 
 - 一台能正常访问外网的服务器 (Colab在中国大陆无法访问）
 
-- 注册一堆Google新号(建议六个以上)，建议绑定手机号以免登录时出现麻烦，<b>千万不要开启多余的安全设置。</b>
+- 确保服务器已正确安装了Chrome浏览器
+
+- 注册一堆Google新帐号(建议六个以上)，建议绑定手机号以免登录时出现麻烦，<b>千万不要开启多余的安全设置。</b>
 
 - 前往[百度智能云](https://ai.baidu.com/tech/speech)申请免费语音识别服务，注册APP并获取相关密钥
   - 用于绕过Colab ReCaptcha
@@ -145,6 +147,7 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
   - 用法: ```naifu nsfw add [-u --uid <USER ID>...] [-g --gid <GROUP ID>...]```
     - ```-u``` 可选参数，为用户QQ号，可填写多个并以空格分隔
     - ```-g``` 可选参数，为群号，可填写多个并以空格分隔
+    - 当两个可选参数均未填写时，默认添加当前所处群聊的群号。
   <br>
   
   - Subcommand: ```rm```
@@ -152,5 +155,6 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
   - 用法: ```naifu nsfw rm [-u --uid <USER ID>...] [-g --gid <GROUP ID>...]```
     - ```-u``` 可选参数，为用户QQ号，可填写多个并以空格分隔
     - ```-g``` 可选参数，为群号，可填写多个并以空格分隔
+    - 当两个可选参数均未填写时，默认移除当前所处群聊的群号。
 
 在权限配置文件第一次加载时，会自动添加```.env```的```SUPERUSERS```为插件白名单用户以及分配NSFW权限。
