@@ -17,6 +17,9 @@ _✨ 基于框架 [NoneBot2](https://v2.nonebot.dev/) 的AI绘图插件 ✨_
   <a href="https://pypi.org/project/nonebot-plugin-colab-novelai">
     <img src="https://badgen.net/pypi/v/nonebot-plugin-colab-novelai" alt="pypi">
   </a>
+  <a href="https://pypi.python.org/pypi/nonebot-plugin-colab-novelai">
+      <img src="https://img.shields.io/pypi/dm/nonebot-plugin-colab-novelai" alt="pypi download">
+  </a>
 </p>
 
 </div>
@@ -25,7 +28,7 @@ _✨ 基于框架 [NoneBot2](https://v2.nonebot.dev/) 的AI绘图插件 ✨_
 
 - 提供prompt让AI进行绘图
 - 可选将图片保存至本地或WebDAV
-- 用户CD与NSFW权限管理
+- 权限管理: 绘图冷却时间与是否允许使用NSFW tag
 
 ## 安装
 
@@ -41,9 +44,11 @@ nb plugin install nonebot_plugin_colab_novelai
 pip install nonebot_plugin_colab_novelai
 ```
 
-## 获取插件帮助
+## 获取插件帮助与拓展功能
 
-- 可选择接入[nonebot-plugin-PicMenu](https://github.com/hamo-reid/nonebot_plugin_PicMenu)以便用户获取插件相关信息与用法。
+- 可选择接入 [nonebot-plugin-PicMenu](https://github.com/hamo-reid/nonebot_plugin_PicMenu) 以便用户获取插件相关信息与用法
+- 可选择接入 [nonebot-plugin-manager](https://github.com/nonepkg/nonebot-plugin-manager) 管理插件黑名单
+- 可选择接入 [nonebot-plugin-savor](https://github.com/A-kirami/nonebot-plugin-savor) 通过图片反推tag
 
 ## Requirements
 
