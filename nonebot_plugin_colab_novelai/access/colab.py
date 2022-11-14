@@ -7,9 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.common.exceptions import TimeoutException, NoAlertPresentException, JavascriptException
+from selenium.common.exceptions import TimeoutException, JavascriptException
 
-from ..utils import chrome_driver as driver, wait_and_click_element, PLUGIN_DIR
+from ..utils import chrome_driver as driver, force_refresh_webpage, wait_and_click_element, PLUGIN_DIR
 
 NOTEBOOK_URL = "https://colab.research.google.com/drive/1oAMaO-0_SxFSr8OEC1jJVkC84pGFzw-I?usp=sharing"
 
@@ -96,12 +96,7 @@ def login_google_acc(gmail: str, password: str) -> None:
 
 @asyncify
 def run_colab(gmail: str, password: str, cpolar_authtoken: str) -> None:
-    driver.get(NOTEBOOK_URL)
-    # handle webpage refresh alert
-    try:
-        driver.switch_to.alert.accept()
-    except NoAlertPresentException:
-        pass
+    force_refresh_webpage(driver, NOTEBOOK_URL)
 
     login_google_acc(gmail, password)
 

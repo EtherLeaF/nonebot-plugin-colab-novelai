@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, NoAlertPresentException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from .saveto import save_content
 from .access.bce import recognize_audio
@@ -22,7 +22,7 @@ from .access.colab import NOTEBOOK_URL, run_colab
 from .access.cpolar import get_cpolar_authtoken, get_cpolar_url
 from .access.naifu import txt2img
 from .config import plugin_config
-from .utils import chrome_driver as driver, wait_and_click_element
+from .utils import chrome_driver as driver, force_refresh_webpage, wait_and_click_element
 from .permissionManager import CooldownManager, NotSafeForWorkManager
 
 
@@ -66,12 +66,7 @@ def handle_recaptcha() -> None:
             ).get_attribute("href")
         # if blocked by Google
         except TimeoutException:
-            # refresh page
-            driver.get(NOTEBOOK_URL)
-            try:
-                driver.switch_to.alert.accept()
-            except NoAlertPresentException:
-                pass
+            force_refresh_webpage(driver, NOTEBOOK_URL)
 
             logger.error("获取Colab ReCaptcha语音时被拦截！")
             return
@@ -100,7 +95,20 @@ def handle_recaptcha() -> None:
             logger.success("Colab ReCaptcha passed!")
             break
 
+    # detect warning dialog: exceeding GPU usage limit
     driver.switch_to.default_content()
+    try:
+        WebDriverWait(driver, 3).until(
+            lambda t_driver: t_driver.find_element(
+                By.XPATH, '/html/body/colab-dialog'
+            )
+        )
+
+        logger.error("当前账号已达到GPU用量上限！")
+        force_refresh_webpage(driver, NOTEBOOK_URL)
+    # no such warning
+    except TimeoutException:
+        pass
 
 
 async def access_colab_with_accounts() -> None:
