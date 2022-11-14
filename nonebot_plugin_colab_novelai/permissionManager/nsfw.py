@@ -45,16 +45,17 @@ class NotSafeForWorkManager(object):
     ) -> None:
         authorized_users, authorized_groups = cls._load_yml()
 
-        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
-            group_id = [str(event.group_id)]
-            authorized_groups.update(group_id)
-            await matcher.send(f"已允许本群使用nsfw tag!")
         if user_id:
             authorized_users.update(user_id)
             await matcher.send(f"已允许以下用户使用nsfw tag:{', '.join(set(user_id))}")
         if group_id:
             authorized_groups.update(group_id)
             await matcher.send(f"已允许以下群组使用nsfw tag:{', '.join(set(group_id))}")
+
+        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
+            group_id = [str(event.group_id)]
+            authorized_groups.update(group_id)
+            await matcher.send(f"已允许本群使用nsfw tag!")
 
         cls._save_yml((authorized_users, authorized_groups))
 
@@ -69,15 +70,16 @@ class NotSafeForWorkManager(object):
         group_id = set(group_id)
         authorized_users, authorized_groups = cls._load_yml()
 
-        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
-            group_id = {str(event.group_id)}
-            await matcher.send(f"已禁止本群使用nsfw tag!")
-            authorized_groups -= group_id
         if user_id:
             await matcher.send(f"已禁止以下用户使用nsfw tag:{', '.join(authorized_users & user_id)}")
             authorized_users -= user_id
         if group_id:
             await matcher.send(f"已禁止以下群组使用nsfw tag:{', '.join(authorized_groups & group_id)}")
+            authorized_groups -= group_id
+
+        if not user_id and not group_id and isinstance(event, GroupMessageEvent):
+            group_id = {str(event.group_id)}
+            await matcher.send(f"已禁止本群使用nsfw tag!")
             authorized_groups -= group_id
 
         cls._save_yml((authorized_users, authorized_groups))
