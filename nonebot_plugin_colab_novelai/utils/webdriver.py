@@ -1,9 +1,15 @@
+import time
 import asyncio
+from typing import Any
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoAlertPresentException
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
 from selenium_stealth import stealth
+from webdriver_manager.chrome import ChromeDriverManager
 
 from .distributed import PLUGIN_DIR
 from ..config import plugin_config
@@ -50,6 +56,27 @@ stealth(
     renderer="Intel Iris OpenGL Engine",
     fix_hairline=True,
 )
+
+
+def force_refresh_webpage(driver: ChromeWebDriver, url: str) -> None:
+    driver.get(url)
+    try:
+        driver.switch_to.alert.accept()
+    except NoAlertPresentException:
+        pass
+
+
+def wait_and_click_element(driver: ChromeWebDriver, by: str, value: str) -> Any:
+    element = WebDriverWait(driver, 5).until(
+        lambda t_driver: t_driver.find_element(by, value)
+    )
+    WebDriverWait(driver, 3).until(
+        ec.element_to_be_clickable((by, value))
+    )
+    element.click()
+
+    time.sleep(0.1)
+    return element
 
 
 # Startup autocheck
