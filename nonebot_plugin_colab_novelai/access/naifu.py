@@ -77,5 +77,5 @@ async def txt2img(
 
 
 # Upcoming!
-async def img2img() -> bytes:
+async def img2img() -> List[bytes]:
     pass

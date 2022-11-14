@@ -5,7 +5,7 @@ from .config import Config as __PluginConfigModel__, plugin_config
 
 
 __plugin_name__ = "Colab-NovelAI"
-__plugin_version__ = "0.1.1"
+__plugin_version__ = "0.1.2"
 __plugin_author__ = "T_EtherLeaF <thetapilla@gmail.com>"
 
 __plugin_adapters__ = [OneBotV11Adapter]
