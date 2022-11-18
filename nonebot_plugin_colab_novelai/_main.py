@@ -1,12 +1,13 @@
 import time
 import random
-from typing import Type
 from functools import reduce
 from argparse import Namespace
+from typing import Type, Any, Optional
 
 import asyncio
 from asyncer import asyncify
 from nonebot.log import logger
+from nonebot.params import T_State
 from nonebot.matcher import Matcher
 from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, MessageSegment
 
@@ -20,9 +21,9 @@ from .saveto import save_content
 from .access.bce import recognize_audio
 from .access.colab import NOTEBOOK_URL, run_colab
 from .access.cpolar import get_cpolar_authtoken, get_cpolar_url
-from .access.naifu import txt2img
+from .access.naifu import txt2img, img2img
 from .config import plugin_config
-from .utils import chrome_driver as driver, force_refresh_webpage, wait_and_click_element
+from .utils import chrome_driver as driver, fetch_image_in_message, force_refresh_webpage, wait_and_click_element
 from .permissionManager import CooldownManager, NotSafeForWorkManager
 
 
@@ -151,7 +152,7 @@ async def access_colab_with_accounts() -> None:
 
 
 # ———————————————————— user interactions ———————————————————— #
-async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Namespace) -> None:
+async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Namespace, **kwargs: Any) -> None:
     # check the arguments
     try:
         assert args.size in [
@@ -179,7 +180,7 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         group_id = None
     nsfw_available = NotSafeForWorkManager.check_nsfw_available(user_id, group_id)
 
-    # get the images
+    # draw the images
     try:
         prompts = ' '.join(args.prompt).replace('，', ',')
         await matcher.send("少女作画中...", at_sender=True)
@@ -193,12 +194,13 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         )
         image_segment = reduce(
             lambda img1, img2: img1+img2,
-            [MessageSegment.image(img) for img in images]
+            [MessageSegment.image(image) for image in images]
         )
         await matcher.send(image_segment, at_sender=True)
 
         # save the images
         await save_content(images, "masterpiece,best quality," + prompts)
+        await matcher.finish()
 
     # if any exception occurs
     except (ValueError, RuntimeError) as e:
@@ -207,6 +209,73 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         await matcher.finish(str(e), at_sender=True)
 
 
-# Upcoming!
-async def naifu_img2img(matcher: Type[Matcher], event: MessageEvent, args: Namespace) -> None:
-    pass
+async def naifu_img2img(
+    matcher: Type[Matcher], event: MessageEvent, state: T_State, args: Namespace,
+    img: Optional[bytes] = None
+) -> None:
+    user_id = event.get_user_id()
+
+    # original image already fetched
+    if img is not None:
+        # record user cd
+        CooldownManager.record_cd(user_id, num=args.num)
+
+        # draw the images
+        try:
+            await matcher.send("少女作画中...", at_sender=True)
+            images = await img2img(
+                prompt=state["prompts"],
+                image=img,
+                n_samples=state["n_samples"],
+                seed=state["seed"],
+                nsfw=state["nsfw"]
+            )
+            image_segment = reduce(
+                lambda img1, img2: img1 + img2,
+                [MessageSegment.image(image) for image in images]
+            )
+            await matcher.send(image_segment, at_sender=True)
+
+            # save the images
+            await save_content(images, "masterpiece,best quality," + state["prompts"], original=img)
+            await matcher.finish()
+
+        except (ValueError, RuntimeError) as e:
+            CooldownManager.record_cd(user_id, num=0)
+            await matcher.finish(str(e), at_sender=True)
+
+    # image isn't fetched yet
+
+    # check the arguments
+    try:
+        assert 1 <= args.num <= plugin_config.naifu_max, "图片数量超过上限！"
+        assert -1 <= args.seed <= 2 ** 32 - 1, "设置的种子需要在-1与2^32-1之间！"
+    except AssertionError as e:
+        await matcher.finish(str(e), at_sender=True)
+
+    # check user cd
+    remaining_cd = CooldownManager.get_user_cd(user_id)
+    if remaining_cd > 0:
+        await matcher.finish(f"你的cd还有{round(remaining_cd)}秒哦，可以稍后再来！", at_sender=True)
+
+    # check nsfw tag availability
+    if isinstance(event, GroupMessageEvent):
+        group_id = event.group_id
+    else:
+        group_id = None
+    nsfw_available = NotSafeForWorkManager.check_nsfw_available(user_id, group_id)
+
+    # inject arguments
+    state["prompts"] = ' '.join(args.prompt).replace('，', ',')
+    state["n_samples"] = args.num
+    state["seed"] = random.randint(0, 2**32 - 1) if args.seed == -1 else args.seed
+    state["nsfw"] = nsfw_available
+
+    if event.reply:
+        if (image := await fetch_image_in_message(event.reply.message)) is not None:
+            state["baseimage"] = image
+    if (image := await fetch_image_in_message(event.message)) is not None:
+        state["baseimage"] = image
+
+    # wait for "got" procedure and call this function again, with image injected
+    # draw the images
