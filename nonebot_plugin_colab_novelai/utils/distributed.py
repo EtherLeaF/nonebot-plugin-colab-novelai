@@ -1,9 +1,14 @@
 import os
 import uuid
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Type, TypeVar, Optional, Union
 
 import av
+
+from httpx import AsyncClient
+from nonebot.matcher import Matcher
+from nonebot.params import T_State, Arg
+from nonebot.adapters.onebot.v11 import Message
 
 from ..config import plugin_config
 
@@ -53,3 +58,27 @@ def convert_audio2wav(fp_in: Any, fp_out: Any, sample_rate: int = 16000) -> None
             for frame in buf_in.decode(in_stream):
                 for packet in out_stream.encode(frame):
                     buf_out.mux(packet)
+
+
+async def fetch_image_in_message(message: Message) -> Optional[bytes]:
+    try:
+        img_url = message["image"][0].data["url"]
+    except IndexError:
+        return None
+
+    async with AsyncClient() as client:
+        resp = await client.get(url=img_url, timeout=30)
+        img = await resp.aread()
+        return img
+
+
+async def inject_image_to_state(
+    matcher: Matcher, state: T_State,
+    image_arg: Union[bytes, Message] = Arg('baseimage')
+) -> None:
+    if isinstance(image_arg, bytes):
+        return
+
+    if (image := await fetch_image_in_message(image_arg)) is None:
+        await matcher.finish("格式错误，请重新触发指令..")
+    state["baseimage"] = image
