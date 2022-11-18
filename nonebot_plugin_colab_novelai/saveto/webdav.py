@@ -15,7 +15,7 @@ webdav_config: Dict[str, Optional[str]] = plugin_config.nai_save2webdav_info
 
 
 @asyncify
-def upload_file(client: WebDavClient, img: bytes, path: str) -> None:
+def upload_image(client: WebDavClient, img: bytes, path: str) -> None:
     try:
         client.upload_fileobj(BytesIO(img), to_path=path, overwrite=True)
         logger.info(f"WebDAV: 图片已保存至{path}！")
@@ -23,7 +23,7 @@ def upload_file(client: WebDavClient, img: bytes, path: str) -> None:
         logger.warning(f"图片保存失败：{e}")
 
 
-async def save_img_to_webdav(images: List[bytes], prompts: str) -> None:
+async def save_img_to_webdav(images: List[bytes], prompts: str, original: Optional[bytes] = None) -> None:
     if None in webdav_config.values():
         return
 
@@ -39,7 +39,10 @@ async def save_img_to_webdav(images: List[bytes], prompts: str) -> None:
 
     client.upload_fileobj(BytesIO(bytes(prompts, 'utf-8')), to_path=f"{folder_path}/prompts.txt", overwrite=True)
     img_upload_tasks = [
-        asyncio.create_task(upload_file(client, img=image, path=f"{folder_path}/{i}.png"))
+        asyncio.create_task(upload_image(client, img=image, path=f"{folder_path}/{i}.png"))
         for i, image in enumerate(images)
     ]
     await asyncio.gather(*img_upload_tasks)
+
+    if original is not None:
+        await upload_image(client, img=original, path=f"{folder_path}/original.png")

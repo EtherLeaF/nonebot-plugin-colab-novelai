@@ -1,7 +1,7 @@
 import os
 import time
-from typing import List
 from pathlib import Path
+from typing import List, Optional
 
 import anyio
 from nonebot.log import logger
@@ -17,7 +17,7 @@ if nai_save2local_path is not None:
     logger.info(f"NovelAI返回的数据将保存到{nai_save2local_path}！")
 
 
-async def save_img_to_local(images: List[bytes], prompts: str) -> None:
+async def save_img_to_local(images: List[bytes], prompts: str, original: Optional[bytes] = None) -> None:
     if nai_save2local_path is None:
         return
 
@@ -31,5 +31,9 @@ async def save_img_to_local(images: List[bytes], prompts: str) -> None:
 
     async with await anyio.open_file(folder_path/"prompts.txt", "w") as f:
         await f.write(prompts)
+
+    if original is not None:
+        async with await anyio.open_file(folder_path/"original.png", "wb") as f:
+            await f.write(original)
 
     logger.success("图片已保存至本地！")
