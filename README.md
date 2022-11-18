@@ -101,8 +101,8 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
 - CommandPermission: ```Anyone```
 - 用于告诉AI开始作图
 
-- 用法: ```naifu draw <-p --prompt <PROMPT>...> [-s --size <SIZE>] [-n --num <NUM>] [-s --seed <SEED>]```
-  - ```-p``` 必选参数，指定作画的关键词，以逗号分隔，必须为英语
+- 用法: ```naifu draw <PROMPT>... [-s --size <SIZE>] [-n --num <NUM>] [-r --seed <SEED>]```
+  - 必须指定作画的关键词，以逗号分隔，必须为英语
   - ```-s``` 可选参数，指定图片生成大小，支持以下几种，默认为```512x768```：
     - ```384x640, 512x768, 512x1024 # Portrait```
     - ```640x384, 768x512, 1024x512 # Landscape```
@@ -111,8 +111,18 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
   - ```-r``` 可选参数，指定图片生成种子，取值范围```0 ~ 2³²-1```，默认值为-1即随机
 <br>
 
+- Command: ```imgdraw```
+- CommandPermission: ```Anyone```
+- 提供基准图片作图
+
+- 用法: ```naifu imgdraw <PROMPT>... [-n --num <NUM>] [-r --seed <SEED>]```
+  - 必须指定作画的关键词，以逗号分隔，必须为英语
+  - ```-n``` 可选参数，指定图片生成数量，最大值参考```.env```配置项，默认值为1
+  - ```-r``` 可选参数，指定图片生成种子，取值范围```0 ~ 2³²-1```，默认值为-1即随机
+<br>
+
 - Command: ```su```
-- Commandpermission: ```Superuser```
+- CommandPermission: ```Superuser```
 - 用于管理插件白名单用户 (白名单用户无绘图cd，在```.env```中```naifu_cd```值为非零时生效)
 
   - Subcommand: ```ls```
@@ -122,14 +132,14 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
   
   - Subcommand: ```add```
   - 添加白名单用户
-  - 用法: ```naifu su add <-u --uid <USER ID>...>```
-    - ```-u``` 必选参数，为用户QQ号，可填写多个并以空格分隔
+  - 用法: ```naifu su add <USER ID>...```
+    - 必须指定用户QQ号，可填写多个并以空格分隔
   <br>
   
   - Subcommand: ```rm```
   - 移除白名单用户
-  - 用法: ```naifu su rm <-u --uid <USER ID>...>```
-    - ```-u``` 必选参数，为用户QQ号，可填写多个并以空格分隔
+  - 用法: ```naifu su rm <USER ID>...```
+    - 必须指定用户QQ号，可填写多个并以空格分隔
 <br>
   
 - Command: ```nsfw```

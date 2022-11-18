@@ -5,7 +5,7 @@ from .config import Config as __PluginConfigModel__, plugin_config
 
 
 __plugin_name__ = "Colab-NovelAI"
-__plugin_version__ = "0.1.2"
+__plugin_version__ = "0.2.0"
 __plugin_author__ = "T_EtherLeaF <thetapilla@gmail.com>"
 
 __plugin_adapters__ = [OneBotV11Adapter]
@@ -13,7 +13,7 @@ __plugin_des__ = "由Colab提供算力进行AI作画！"
 __plugin_usage__ = (
     "让AI帮你画出好康的图片吧！\n"
     "触发指令：naifu <command> [<subcommands>] [<args>]\n"
-    ".\n"
+    " \n"
     "查看具体用法请发送指令：菜单 NovelAI <功能序号>\n"
     "子命令集如下："
 )
@@ -35,14 +35,24 @@ __plugin_meta__ = PluginMetadata(
                 'trigger_method': '子命令：draw',
                 'trigger_condition': 'Anyone',
                 'brief_des': '告诉AI开始作图',
-                'detail_des': f'naifu draw <-p --prompt <PROMPT>...> '
-                              f'[-s --size <SIZE>] [-n --num <NUM>] [-s --seed <SEED>]\n'
+                'detail_des': f'naifu draw <PROMPT>... [-s --size <SIZE>] [-n --num <NUM>] [-r --seed <SEED>]\n'
                               f' \n'
-                              f'-p: 必选参数，指定作画的关键词，以逗号分隔，必须为英语\n'
+                              f'必须指定作画的关键词，以逗号分隔，必须为英语\n'
                               f'-s: 可选参数，指定图片生成大小，支持以下几种，默认为512x768：\n'
                               f'  384x640, 512x768, 512x1024   # Portrait\n'
                               f'  640x384, 768x512, 1024x512   # Landscape\n'
                               f'  512x512, 640x640, 1024x1024  # Square\n'
+                              f'-n: 可选参数，指定图片生成数量，最大为{plugin_config.naifu_max}，默认值为1\n'
+                              f'-r: 可选参数，指定图片生成种子，取值范围0 ~ 2^32-1，默认值为-1即随机'
+            },
+            {
+                'func': '以图作图',
+                'trigger_method': '子命令：imgdraw',
+                'trigger_condition': 'Anyone',
+                'brief_des': '输入一张基准图片开始作图',
+                'detail_des': f'naifu imgdraw <PROMPT>... <IMAGE> [-n --num <NUM>] [-r --seed <SEED>]\n'
+                              f' \n'
+                              f'必须指定作画的关键词，以逗号分隔，必须为英语\n'
                               f'-n: 可选参数，指定图片生成数量，最大为{plugin_config.naifu_max}，默认值为1\n'
                               f'-r: 可选参数，指定图片生成种子，取值范围0 ~ 2^32-1，默认值为-1即随机'
             },
@@ -59,14 +69,14 @@ __plugin_meta__ = PluginMetadata(
                               '列出当前所有白名单用户\n'
                               ' \n'
                               '# Subcommand 2:\n'
-                              'naifu su add <-u --uid <USER ID>...>\n'
+                              'naifu su add <USER ID>...\n'
                               '添加白名单用户\n'
-                              '-u: 必选参数，为用户QQ号，可填写多个并以空格分隔\n'
+                              '必须指定用户QQ号，可填写多个并以空格分隔\n'
                               ' \n'
                               '# Subcommand 3:\n'
-                              'naifu su rm <-u --uid <USER ID>...>\n'
+                              'naifu su rm <USER ID>...\n'
                               '移除白名单用户\n'
-                              '-u: 必选参数，为用户QQ号，可填写多个并以空格分隔'
+                              '必须指定用户QQ号，可填写多个并以空格分隔'
             },
             {
                 'func': 'NSFW权限管理',
