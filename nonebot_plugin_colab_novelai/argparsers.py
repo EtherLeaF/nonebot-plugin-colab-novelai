@@ -9,15 +9,14 @@ naifu_draw_parser = ArgumentParser()
 naifu_draw_subparsers = naifu_draw_parser.add_subparsers()
 
 naifu_txt2img_parser = naifu_draw_subparsers.add_parser("draw")
-naifu_txt2img_parser.add_argument('-p', '--prompt', type=str, nargs='+', required=True)
+naifu_txt2img_parser.add_argument('prompt', type=str, nargs='+')
 naifu_txt2img_parser.add_argument('-s', '--size', type=str, default="512x768")
 naifu_txt2img_parser.add_argument('-n', '--num', type=int, default=1)
 naifu_txt2img_parser.add_argument('-r', '--seed', type=int, default=-1)
 naifu_txt2img_parser.set_defaults(draw=naifu_txt2img)
 
 naifu_img2img_parser = naifu_draw_subparsers.add_parser("imgdraw")
-naifu_img2img_parser.add_argument('-p', '--prompt', type=str, nargs='+', required=True)
-naifu_img2img_parser.add_argument('-s', '--size', type=str, default="default")
+naifu_img2img_parser.add_argument('prompt', type=str, nargs='+')
 naifu_img2img_parser.add_argument('-n', '--num', type=int, default=1)
 naifu_img2img_parser.add_argument('-r', '--seed', type=int, default=-1)
 naifu_img2img_parser.set_defaults(draw=naifu_img2img)
@@ -35,11 +34,11 @@ naifu_ls_su_parser = naifu_su_subparsers.add_parser("ls")
 naifu_ls_su_parser.set_defaults(operate=CooldownManager.list_authorized_users, uid=[], gid=[])
 
 naifu_add_su_parser = naifu_su_subparsers.add_parser("add")
-naifu_add_su_parser.add_argument('-u', '--uid', type=str, nargs='+', required=True)
+naifu_add_su_parser.add_argument('uid', type=str, nargs='+')
 naifu_add_su_parser.set_defaults(operate=CooldownManager.add_authorized_user, gid=[])
 
 naifu_remove_su_parser = naifu_su_subparsers.add_parser("rm")
-naifu_remove_su_parser.add_argument('-u', '--uid', type=str, nargs='+', required=True)
+naifu_remove_su_parser.add_argument('uid', type=str, nargs='+')
 naifu_remove_su_parser.set_defaults(operate=CooldownManager.remove_authorized_user, gid=[])
 
 # nsfw mode
