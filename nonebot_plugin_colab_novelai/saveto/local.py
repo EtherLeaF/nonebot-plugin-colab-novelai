@@ -17,7 +17,7 @@ if nai_save2local_path is not None:
     logger.info(f"NovelAI返回的数据将保存到{nai_save2local_path}！")
 
 
-async def save_img_to_local(images: List[bytes], prompts: str, original: Optional[bytes] = None) -> None:
+async def save_img_to_local(images: List[bytes], prompts: str, uc: str, baseimage: Optional[bytes] = None) -> None:
     if nai_save2local_path is None:
         return
 
@@ -30,10 +30,10 @@ async def save_img_to_local(images: List[bytes], prompts: str, original: Optiona
             await f.write(image)
 
     async with await anyio.open_file(folder_path/"prompts.txt", "w") as f:
-        await f.write(prompts)
+        await f.write("[Prompts]\n" + prompts + "\n[Undesired Content]\n" + uc)
 
-    if original is not None:
+    if baseimage is not None:
         async with await anyio.open_file(folder_path/"original.png", "wb") as f:
-            await f.write(original)
+            await f.write(baseimage)
 
     logger.success("图片已保存至本地！")
