@@ -1,50 +1,29 @@
 import re
 import base64
 from io import BytesIO
-from typing import List, Tuple
+from typing import List, Any
 
 from PIL import Image
 from httpx import AsyncClient
 
 from .cpolar import get_cpolar_url
-from ..utils import NSFW_TAGS
 
 SIZE = [i*64 for i in range(1, 17)]
-
-
-def nsfw_tag_filtering(prompt: str, uc: str) -> Tuple[str, str]:
-    uc += ','.join(NSFW_TAGS)
-
-    prompts = set(prompt.split(','))
-    for p in prompts.copy():
-        for nsfw_tag in NSFW_TAGS:
-            if re.match(nsfw_tag, p, flags=re.I) is not None:
-                prompts.discard(p)
-    if not prompts:
-        raise ValueError("色鬼，好好检查一下你都放了些什么tag进来！")
-    prompt = ','.join(prompts)
-
-    return prompt, uc
 
 
 # textual prompts -> picture
 async def txt2img(
     prompt: str,
+    uc: str,
     seed: int,
     width: int = 512, height: int = 768,
     n_samples: int = 1,
     sampler: str = "k_euler_ancestral",
     steps: int = 28,
     scale: int = 12,
-    uc: str = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, "
-              "worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry,",
     uc_preset: int = 0,
-    nsfw: bool = False
+    **kwargs: Any
 ) -> List[bytes]:
-    # data preprocessing
-    if not nsfw:
-        prompt, uc = nsfw_tag_filtering(prompt, uc)
-
     try:
         cpolar_url = await get_cpolar_url()
         api_url = cpolar_url + "/generate-stream"
@@ -54,7 +33,7 @@ async def txt2img(
             "authorization": "Bearer"
         }
         data = {
-            "prompt": "masterpiece,best quality," + prompt,
+            "prompt": prompt,
             "width": width, "height": height,
             "n_samples": n_samples,
             "sampler": sampler,
@@ -83,6 +62,7 @@ async def txt2img(
 # original image + textual prompts -> picture
 async def img2img(
     prompt: str,
+    uc: str,
     image: bytes,
     seed: int,
     n_samples: int = 1,
@@ -91,15 +71,10 @@ async def img2img(
     scale: int = 12,
     strength: float = 0.7,
     noise: float = 0.2,
-    uc: str = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, "
-              "worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry,",
     uc_preset: int = 0,
-    nsfw: bool = False
+    **kwargs: Any
 ) -> List[bytes]:
-    # data preprocessing
-    if not nsfw:
-        prompt, uc = nsfw_tag_filtering(prompt, uc)
-
+    # image preprocessing
     image = Image.open(BytesIO(image))
     if (bound := max(image.size)) > 1024:
         target_size = tuple(map(lambda x: x/bound*1024, image.size))
@@ -125,7 +100,7 @@ async def img2img(
             "authorization": "Bearer"
         }
         data = {
-            "prompt": "masterpiece,best quality," + prompt,
+            "prompt": prompt,
             "image": image_b64,
             "width": width, "height": height,
             "n_samples": n_samples,
