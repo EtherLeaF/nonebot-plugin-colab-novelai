@@ -1,5 +1,4 @@
 import time
-import random
 from functools import reduce
 from argparse import Namespace
 from typing import Type, Any, Optional
@@ -23,7 +22,12 @@ from .access.colab import NOTEBOOK_URL, run_colab
 from .access.cpolar import get_cpolar_authtoken, get_cpolar_url
 from .access.naifu import txt2img, img2img
 from .config import plugin_config
-from .utils import chrome_driver as driver, fetch_image_in_message, force_refresh_webpage, wait_and_click_element
+from .utils import (
+    chrome_driver as driver,
+    fetch_image_in_message,
+    force_refresh_webpage, wait_and_click_element,
+    preprocess_painting_parameters
+)
 from .permissionManager import CooldownManager, NotSafeForWorkManager
 
 
@@ -43,18 +47,23 @@ def handle_recaptcha() -> None:
     driver.execute_script("arguments[0].click();", checkbox)
     driver.switch_to.default_content()
 
-    # click "audio auth" button
+    # detect if reCaptcha iframe still exists
     try:
+        time.sleep(2)
         driver.switch_to.frame(driver.find_element(
             By.XPATH, '//iframe[contains(@src,"https://www.google.com/recaptcha/api2/bframe")]'
         ))
+    except NoSuchElementException:
+        logger.success("Colab ReCaptcha passed!")
+        return
+    # switch to audio task
+    try:
         wait_and_click_element(
             driver,
             by=By.CSS_SELECTOR, value='button#recaptcha-audio-button'
         )
-    except (NoSuchElementException, TimeoutException):
-        logger.success("Colab ReCaptcha passed!")
-        return
+    except TimeoutException:
+        pass
 
     # analyze audio
     while True:
@@ -68,7 +77,6 @@ def handle_recaptcha() -> None:
         # if blocked by Google
         except TimeoutException:
             force_refresh_webpage(driver, NOTEBOOK_URL)
-
             logger.error("获取Colab ReCaptcha语音时被拦截！")
             return
 
@@ -153,18 +161,6 @@ async def access_colab_with_accounts() -> None:
 
 # ———————————————————— user interactions ———————————————————— #
 async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Namespace, **kwargs: Any) -> None:
-    # check the arguments
-    try:
-        assert args.size in [
-            "384x640", "512x768", "512x1024",  # Portrait
-            "640x384", "768x512", "1024x512",  # Landscape
-            "512x512", "640x640", "1024x1024"  # Square
-        ], "暂不支持输入的图片大小！"
-        assert 1 <= args.num <= plugin_config.naifu_max, "图片数量超过上限！"
-        assert -1 <= args.seed <= 2**32 - 1, "设置的种子需要在-1与2^32-1之间！"
-    except AssertionError as e:
-        await matcher.finish(str(e), at_sender=True)
-
     # check user cd
     user_id = event.get_user_id()
     remaining_cd = CooldownManager.get_user_cd(user_id)
@@ -180,18 +176,17 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         group_id = None
     nsfw_available = NotSafeForWorkManager.check_nsfw_available(user_id, group_id)
 
+    # preprocess parameters for painting
+    try:
+        params = await preprocess_painting_parameters(matcher=matcher, args=args, on_nsfw=nsfw_available)
+    except ValueError as e:
+        await matcher.finish(str(e), at_sender=True)
+    width, height = map(int, args.size.split('x'))
+
     # draw the images
     try:
-        prompts = ' '.join(args.prompt).replace('，', ',')
         await matcher.send("少女作画中...", at_sender=True)
-        images = await txt2img(
-            prompt=prompts,
-            width=int(args.size.split('x')[0]),
-            height=int(args.size.split('x')[1]),
-            n_samples=args.num,
-            seed=random.randint(0, 2**32 - 1) if args.seed == -1 else args.seed,
-            nsfw=nsfw_available
-        )
+        images = await txt2img(**params, width=width, height=height)
         image_segment = reduce(
             lambda img1, img2: img1+img2,
             [MessageSegment.image(image) for image in images]
@@ -199,7 +194,7 @@ async def naifu_txt2img(matcher: Type[Matcher], event: MessageEvent, args: Names
         await matcher.send(image_segment, at_sender=True)
 
         # save the images
-        await save_content(images, "masterpiece,best quality," + prompts)
+        await save_content(images, params["prompt"], params["uc"])
         await matcher.finish()
 
     # if any exception occurs
@@ -215,7 +210,7 @@ async def naifu_img2img(
 ) -> None:
     user_id = event.get_user_id()
 
-    # original image already fetched
+    # baseimage already fetched
     if img is not None:
         # record user cd
         CooldownManager.record_cd(user_id, num=args.num)
@@ -223,13 +218,7 @@ async def naifu_img2img(
         # draw the images
         try:
             await matcher.send("少女作画中...", at_sender=True)
-            images = await img2img(
-                prompt=state["prompts"],
-                image=img,
-                n_samples=state["n_samples"],
-                seed=state["seed"],
-                nsfw=state["nsfw"]
-            )
+            images = await img2img(**state, image=img)
             image_segment = reduce(
                 lambda img1, img2: img1 + img2,
                 [MessageSegment.image(image) for image in images]
@@ -237,39 +226,41 @@ async def naifu_img2img(
             await matcher.send(image_segment, at_sender=True)
 
             # save the images
-            await save_content(images, "masterpiece,best quality," + state["prompts"], original=img)
+            await save_content(images, state["prompt"], state["uc"], baseimage=img)
             await matcher.finish()
 
         except (ValueError, RuntimeError) as e:
             CooldownManager.record_cd(user_id, num=0)
             await matcher.finish(str(e), at_sender=True)
 
-    # image isn't fetched yet
-
-    # check the arguments
-    try:
-        assert 1 <= args.num <= plugin_config.naifu_max, "图片数量超过上限！"
-        assert -1 <= args.seed <= 2 ** 32 - 1, "设置的种子需要在-1与2^32-1之间！"
-    except AssertionError as e:
-        await matcher.finish(str(e), at_sender=True)
+    # baseimage isn't fetched yet
 
     # check user cd
     remaining_cd = CooldownManager.get_user_cd(user_id)
     if remaining_cd > 0:
         await matcher.finish(f"你的cd还有{round(remaining_cd)}秒哦，可以稍后再来！", at_sender=True)
 
-    # check nsfw tag availability
+    # check if nsfw tags are allowed in current chat
     if isinstance(event, GroupMessageEvent):
         group_id = event.group_id
     else:
         group_id = None
     nsfw_available = NotSafeForWorkManager.check_nsfw_available(user_id, group_id)
 
-    # inject arguments
-    state["prompts"] = ' '.join(args.prompt).replace('，', ',')
-    state["n_samples"] = args.num
-    state["seed"] = random.randint(0, 2**32 - 1) if args.seed == -1 else args.seed
-    state["nsfw"] = nsfw_available
+    # preprocess parameters for painting
+    try:
+        params = await preprocess_painting_parameters(matcher=matcher, args=args, on_nsfw=nsfw_available)
+        assert 0 <= args.strength <= 0.99, "设置的strength需要在0到0.99之间！"
+        assert 0 <= args.noise <= 0.99, "设置的noise需要在0到0.99之间！"
+    except (ValueError, AssertionError) as e:
+        await matcher.finish(str(e), at_sender=True)
+
+    # inject parameters
+    state.update(
+        params,
+        strength=round(args.strength, 2),
+        noise=round(args.noise, 2)
+    )
 
     if event.reply:
         if (image := await fetch_image_in_message(event.reply.message)) is not None:
