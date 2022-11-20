@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="nonebot_plugin_colab_novelai",
-    version="0.2.0",
+    version="0.2.1",
     author="T_EtherLeaF",
     author_email="thetapilla@gmail.com",
     keywords=["pip", "nonebot2", "nonebot", "nonebot_plugin", "NovelAI", "Colaboratory", "QQ-bot", "chatbot"],
