@@ -68,6 +68,7 @@ pip install nonebot_plugin_colab_novelai
 
 ```ini
 headless_webdriver: bool = True                       # 是否使用无头模式启动浏览器
+colab_proxy: Optional[str] = None                     # 如有需要可填写代理地址
 google_accounts: Dict[str, str] = {}                  # Required, 填写要使用的谷歌账密 {"account": "password", ...}
 cpolar_username: str = None                           # Required, 填写cpolar账号邮箱
 cpolar_password: str = None                           # Required, 填写cpolar账号的密码
@@ -92,6 +93,8 @@ nai_nsfw_tags: Optional[List[str] | str] = None       # 自定义可能会生成
 
 - 插件会尝试禁止未授权的用户绘画NSFW图片，通过屏蔽特定tag来实现。预设的一些tag集合位于[/utils/distributed.py](https://github.com/EtherLeaF/nonebot-plugin-colab-novelai/blob/main/nonebot_plugin_colab_novelai/utils/distributed.py)，如果有其他好的预设想法，欢迎pr。
   - 屏蔽的tag集合为```.env```配置项与预设项的并集，匹配时不区分大小写。
+
+- 如需使用代理，支持填写```http://```or```https://```or```socks5://```+```ip:port```
 
 ## 如何使用？
 
