@@ -17,6 +17,7 @@ from ..access.cpolar import get_cpolar_authtoken
 
 
 options = webdriver.ChromeOptions()
+
 if plugin_config.headless_webdriver:
     options.add_argument('--headless')
     options.add_argument("--no-sandbox")
@@ -26,6 +27,9 @@ if plugin_config.headless_webdriver:
     options.add_argument("--remote-debugging-port=9222")
 else:
     options.add_argument("--start-maximized")
+if (proxy := plugin_config.colab_proxy) is not None:
+    options.add_argument(f'--proxy-server={proxy}')
+
 options.add_argument("--disable-blink-features")
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument('--incognito')
@@ -34,18 +38,15 @@ options.add_argument("--disable-infobars")
 options.add_argument("--no-default-browser-check")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
-# options.add_experimental_option('mobileEmulation', {'deviceName': 'iPhone X'})
+
 driver_path = ChromeDriverManager(path="./data/colab-novelai/").install()
 chrome_driver = webdriver.Chrome(service=Service(driver_path), options=options)
 
-with open(PLUGIN_DIR / "js" / "undefineWebDriver.js", 'r', encoding='utf-8') as js:
-    chrome_driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        "source": js.read()
-    })
-with open(PLUGIN_DIR / "js" / "objKeySort.js", 'r', encoding='utf-8') as js:
-    chrome_driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        "source": js.read()
-    })
+for filename in ("undefineWebDriver.js", "objKeySort.js"):
+    with open(PLUGIN_DIR / "js" / filename, 'r', encoding='utf-8') as js:
+        chrome_driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": js.read()
+        })
 
 stealth(
     chrome_driver,
