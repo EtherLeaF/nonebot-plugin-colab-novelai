@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Union
 
 from nonebot import get_driver
 from pydantic import BaseModel, Extra
@@ -6,6 +6,7 @@ from pydantic import BaseModel, Extra
 
 class Config(BaseModel, extra=Extra.ignore):
     headless_webdriver: bool = True
+    colab_proxy: Optional[str] = None
     google_accounts: Dict[str, str] = {}
     cpolar_username: str = None
     cpolar_password: str = None
@@ -19,7 +20,7 @@ class Config(BaseModel, extra=Extra.ignore):
         "username": None, "password": None,
         "path": None
     }
-    nai_nsfw_tags: Optional[List[str] | str] = None
+    nai_nsfw_tags: Optional[Union[List[str], str]] = None
 
 
 plugin_config = Config.parse_obj(get_driver().config.dict())
